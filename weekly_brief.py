@@ -14,7 +14,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import feedparser
-import anthropic
+from openai import OpenAI
 
 # ─────────────────────────────────────────────
 # CONFIGURATION — edit these values
@@ -23,7 +23,7 @@ import anthropic
 RECIPIENT_EMAIL = os.environ.get("RECIPIENT_EMAIL", "tu@email.com")
 SENDER_EMAIL    = os.environ.get("SENDER_EMAIL", "tubot@gmail.com")
 GMAIL_APP_PASS  = os.environ.get("GMAIL_APP_PASSWORD", "")
-ANTHROPIC_KEY   = os.environ.get("ANTHROPIC_API_KEY", "")
+OPENAI_KEY      = os.environ.get("OPENAI_API_KEY", "")
 
 TOP_N_ARTICLES = 5   # Número de artículos en el resumen final
 
@@ -218,15 +218,15 @@ Asegurate de que el JSON sea válido y parseable.
 
 
 def call_claude(prompt: str) -> dict:
-    """Call Claude API and parse the JSON response."""
-    client = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
-    response = client.messages.create(
-        model="claude-sonnet-4-20250514",
+    """Call OpenAI API and parse the JSON response."""
+    client = OpenAI(api_key=OPENAI_KEY)
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",   # gratis en el free tier; cambiar a "gpt-4o" si querés más calidad
         max_tokens=4000,
         messages=[{"role": "user", "content": prompt}]
     )
 
-    raw = response.content[0].text.strip()
+    raw = response.choices[0].message.content.strip()
 
     # Strip markdown code fences if present
     raw = re.sub(r"^```(?:json)?\s*", "", raw)
