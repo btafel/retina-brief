@@ -1,0 +1,35 @@
+name: Retina Literature Weekly Brief
+
+on:
+  schedule:
+    # Lunes 10:30 UTC = 7:30 AM ART (UTC-3)
+    - cron: "30 10 * * 1"
+  workflow_dispatch:
+    # Permite ejecución manual desde la UI de GitHub Actions (útil para testing)
+
+jobs:
+  send-brief:
+    name: Fetch, Summarize & Send
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run weekly brief
+        run: python weekly_brief.py
+        env:
+          ANTHROPIC_API_KEY:   ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_APP_PASSWORD:  ${{ secrets.GMAIL_APP_PASSWORD }}
+          SENDER_EMAIL:        ${{ secrets.SENDER_EMAIL }}
+          RECIPIENT_EMAIL:     ${{ secrets.RECIPIENT_EMAIL }}
